@@ -1,5 +1,6 @@
 package com.ecw.rcm.configure;
 
+import com.ecw.rcm.filters.EcwUsernamePasswordAuthFilter;
 import com.ecw.rcm.service.CustomDetailsService;
 import com.ecw.rcm.utils.CustomPasswordEncoder;
 import com.ecw.rcm.utils.EcwHashUtill;
@@ -25,7 +26,6 @@ import java.util.regex.Pattern;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -34,7 +34,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
         // authentication manager (see below)
-        auth.userDetailsService(customDetailsService).passwordEncoder(passwordEncoder());
+      auth.userDetailsService(customDetailsService).passwordEncoder(passwordEncoder());
+
+
     }
 
 
@@ -42,12 +44,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
 
         // http builder configurations for authorize requests and form login (see below)
-        http.authorizeRequests()
+/*        http.authorizeRequests()
                 .antMatchers("/", "/resources/**","/resources/static/**")
                 .permitAll()
-                .antMatchers( "/css/**")
-                .permitAll()
-                .antMatchers( "/js/**")
+                .antMatchers( "/css/**","/js/**","/img/**")
                 .permitAll()
                 .antMatchers("/login")
                 .permitAll()
@@ -67,13 +67,37 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf()
                 .disable();
+*/
+        String []str={"/js/**","/img/**","/css/**","/login.html","/loginData/**","/loginData/key","/loginData/pubKey"};
+        http.csrf().disable();
 
+
+
+        http.addFilterBefore(authenticationFilter(),
+                EcwUsernamePasswordAuthFilter.class)
+                .authorizeRequests()
+                 .antMatchers(str)
+                .permitAll()
+                 .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .loginPage("/login.html")
+                //.loginProcessingUrl("/loginProcess")
+                .successForwardUrl("/home.html");
 
 
       /*  http.authorizeRequests().anyRequest().authenticated().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.NEVER);
 */
     }
+
+    public EcwUsernamePasswordAuthFilter  authenticationFilter() throws Exception {
+        EcwUsernamePasswordAuthFilter filter = new EcwUsernamePasswordAuthFilter();
+        filter.setAuthenticationManager(authenticationManagerBean());
+        //filter.setAuthenticationFailureHandler(failureHandler());
+        return filter;
+    }
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring();

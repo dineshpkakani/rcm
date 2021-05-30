@@ -5,43 +5,56 @@
 
     <meta charset="utf-8">
 
-    <title>Login Form Tutorial | Design Modo | Valeriu Timbuc</title>
+    <title>Login Form </title>
 
     <link rel="stylesheet" href="css/login-form.css" media="screen">
 
     <style>body{background:url(img/bg.png) center;margin: 0 auto;width: 960px;padding-top: 50px}.footer{margin-top:50px;text-align:center;color:#666;font:bold 14px Arial}.footer a{color:#999;text-decoration:none}.login-form{margin: 50px auto;}</style>
     <meta name="robots" content="noindex,follow" />
+
 </head>
 
 <body>
-
-<img src="img/title.png" alt="title">
 
 <div class="login-form">
 
     <h1>Login Form</h1>
 
-    <form action="#">
+    <form name=""  id="" action="" >
 
-        <input type="text" name="username" placeholder="username">
+        <input type="text" name="doctorID" placeholder="doctorID" id="doctorID">
 
-        <input type="password" name="password" placeholder="password">
+        <input type="password" name="passwordField" id="passwordField" placeholder="password">
 
+      <br style="height: 0px" />
         <span>
 			<input type="checkbox" name="chkbox" id="chkbox">
 			<label for="chkbox">remember</label>
 		</span>
 
-        <input type="submit" value="log in">
+        <input type="button" value="log in" onclick="setLogin()">
 
+    </form>
+    <form  name="loginForm"  id="loginForm" action="/login" method="post">
+        <input type="hidden" value="" name="doctorIDVal" id="doctorIDVal">
+        <input type="hidden" value="" name="password" id="password">
+        <input type="hidden" name="key" id="key" value="" />
+        <input type="hidden" name="value" id="value" value="" />
     </form>
 
 </div>
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="js/login-form.js"></script>
 
+
+
+<script src="js/setAesKey.js"></script>
+<script src="js/md5.js"></script>
+<script src="js/sha1-min.js"></script>
+<script src="js/crypto.js" /></script>
+<script src="js/jsencrypt.js"></script>
+<script src="js/login-form.js"></script>
 </body>
 
 </html>

@@ -20,7 +20,7 @@ logging:
   level:
     org:
       springframework:
-        web: DEBUG
+        web: debug
       hibernate: ERROR
   file:
     name: "ganesh.log"
