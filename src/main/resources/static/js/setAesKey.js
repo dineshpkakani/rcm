@@ -88,6 +88,7 @@ function padString(source) {
 
 function setAesKeyInSession(strKeyValue, strIv, usage){
 	var response = false;
+	debugger;
 	if(rsaPubKey){
 		var csrfToken = $("meta[name='_csrf']").attr("content");
 		var encrypt = new JSEncrypt();

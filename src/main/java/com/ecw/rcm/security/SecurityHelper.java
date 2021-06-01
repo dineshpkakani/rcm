@@ -273,15 +273,14 @@ public class SecurityHelper {
 						cipher.init(Cipher.DECRYPT_MODE, pvtKey);
 						 keyValue = new String(cipher.doFinal(org.apache.tomcat.util.codec.binary.Base64.decodeBase64(encKeyValue)));
 						 ivValue = new String(cipher.doFinal(org.apache.tomcat.util.codec.binary.Base64.decodeBase64(encIvValue)));
-						if(!keyValue.trim().isEmpty() && !ivValue.trim().isEmpty()) {
-						}
+
 					}
 
 
 			}catch(Exception ex1){
 				ex1.printStackTrace();
 			}
-			String str[]=new String[1];
+			String str[]=new String[2];
 			str[0]=keyValue;
 			str[1]=ivValue;
 			return str ;

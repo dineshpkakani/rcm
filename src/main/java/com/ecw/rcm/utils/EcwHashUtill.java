@@ -107,18 +107,5 @@ public class EcwHashUtill {
         formatter.close();
         return retValue;
     }
-    //End - Sujal Shah
-    
-  /*  public static synchronized String getSHA256HashVB(String message) {
-    	String strHash = "";
-    	try {
-    		MessageDigest messagedigest = MessageDigest.getInstance("SHA-256");
-    		messagedigest.update(message.getBytes());
-    		byte digest[] = messagedigest.digest();
-    		strHash = Base64.encode(digest);
-    	} catch (Exception e) {
-    		EcwLog.AppendExceptionToLog(e);
-    	}
-    	return strHash;
-    } */
+
 }
