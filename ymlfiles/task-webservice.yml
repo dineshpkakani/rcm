@@ -1,0 +1,50 @@
+server:
+  port: 8082
+  contextPath: /task-service
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  zipkin:
+    baseUrl: http://localhost:9411/
+  sleuth:
+    sampler:
+      percentage: 1.0
+
+# When enabled=false, traces log to the console. Comment to send to zipkin
+sample:
+  zipkin:
+    enabled: true
+
+# Note that we will use the JWT token to get user data
+security:
+  oauth2:
+    resource:
+      jwt:
+        keyValue: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhVny3DfQqdvQaPj6SJiiFfPRGH/5k3OiAXTCsmpKnL/GVKZpfFjT3LhN7xoj0DzJLTCOE94eOjIHipFzxrL00kBCZJ3HOornKDpTh17yPuqJI6DNmvJaRBbc3SVQsO0vndnDAeOBiv4euGHH97sPZYFqhmwM35PboqxeWaHrfgWcA5F8VFTp+HDPr26G4sv/UqkR1LsfRoD4gzNJswi00eWcNjeoEzy71023VECQYDytUg/wVqWOJnShWOJnCBnuzmjrtOCg6O6ecdHhVaiRI0//ZR71x2oDW5pe+kgVhhM29TH8SVRjbAFh35obN6ppcF3A7PFLf+euZTsmXMaahQIDAQAB
+          -----END PUBLIC KEY-----
+---
+# task-webservice instance when used on Docker
+spring:
+  profiles: docker
+  zipkin:
+    baseUrl: http://zipkinserver:9411/
+
+eureka:
+# Register our microservices to Eureka using hostnames in a Docker environment will not work, they will all get
+# one and the same hostname. Instead we configure them to use its IP address during registration with Eureka.
+  instance:
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://eurekaregistry:8761/eureka/
+
+# Define the port where the API gateway server would be running. This could always be port 8080
+# since each docker container has it's own IP
+server:
+  port: 8080

@@ -1,0 +1,149 @@
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+spring:
+  aop:
+    proxy-target-class: true
+  zipkin:
+    baseUrl: http://localhost:9411/
+  sleuth:
+    sampler:
+# Generally the tracing data volume can be quite high; so we can tell Spring sleuth to
+# sample only some percentage of requests by specifying a double value between 0.0 and 1.0.
+
+# For testing purposes, we are sampling all requests (1.0) but generally in production you should
+# sample only 10-20% of the data or write custome strategy to sample say only in case of 500 errors.
+      percentage: 1.0
+
+# When enabled=false, traces log to the console. Comment to send to zipkin
+sample:
+  zipkin:
+    enabled: true
+
+# The OAuth2 server definition that would be used to send the authorization requests to
+authserver:
+    hostname: localhost
+    port: 8899
+    contextPath: userauth
+
+# Define settings for Single-Sign-On with OAuth2; this means that we need to relay the OAuth token
+# to the subsequent resources that are proxied by the Zuul api gateway.
+
+# The home definition tells us to allow anonymous access (secure: false) to the static resources that
+# are accessed through the Zuul proxy.
+
+# Remaining properties are used by the OAuth2 SSO to determine where the authorization server is and
+# what client crendentials to use to access that server.
+security:
+  user:
+    password: none
+  oauth2:
+#    client:
+#      accessTokenUri: http://${authserver.hostname}:${authserver.port}/${authserver.contextPath}/oauth/token
+#      userAuthorizationUri: http://${authserver.hostname}:${authserver.port}/${authserver.contextPath}/oauth/authorize
+#      clientId: acme
+#      clientSecret: acmesecret
+#      registered-redirect-uri: http://localhost:8765/login
+#      pre-established-redirect-uri: http://localhost:8765/login
+#      use-current-uri: false
+    resource:
+      jwt:
+        keyValue: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhVny3DfQqdvQaPj6SJiiFfPRGH/5k3OiAXTCsmpKnL/GVKZpfFjT3LhN7xoj0DzJLTCOE94eOjIHipFzxrL00kBCZJ3HOornKDpTh17yPuqJI6DNmvJaRBbc3SVQsO0vndnDAeOBiv4euGHH97sPZYFqhmwM35PboqxeWaHrfgWcA5F8VFTp+HDPr26G4sv/UqkR1LsfRoD4gzNJswi00eWcNjeoEzy71023VECQYDytUg/wVqWOJnShWOJnCBnuzmjrtOCg6O6ecdHhVaiRI0//ZR71x2oDW5pe+kgVhhM29TH8SVRjbAFh35obN6ppcF3A7PFLf+euZTsmXMaahQIDAQAB
+          -----END PUBLIC KEY-----
+# Define the port where the API gateway server would be running
+server:
+  port: 8765
+
+# Define the routes which determine what URL are serviced by what applications.
+# The application/services are defined in the bootstrap.yml file of individual applications
+# using the spring.application.name property.
+
+# Note that we don't proxy the calls to the authorization server. The reason being that
+# Spring cloud security would need to secure the api gateway before it can route the
+# requests using zuul
+zuul:
+  ignoredServices: '*'
+  routes:
+    user-service:
+      path: /user-service/**
+      stripPrefix: false
+      serviceId: user-webservice
+      sensitiveHeaders:
+    task-service:
+      path: /task-service/**
+      stripPrefix: false
+      serviceId: task-webservice
+      sensitiveHeaders:
+    user:
+      path: /userauth/**
+      stripPrefix: false
+      serviceId: auth-server
+      sensitiveHeaders:
+#      path: /api/loggedinuser/**
+#      stripPrefix: true
+#      url: http://${authserver.hostname}:${authserver.port}/${authserver.contextPath}/
+#    ui:
+#      path: /**
+#      stripPrefix: false
+#      serviceId: web-portal
+    eureka:
+      user-webservice:
+        semaphore:
+          maxSemaphores: 200
+      task-webservice:
+        semaphore:
+          maxSemaphores: 200
+
+# Since our gateway is using Eureka (@EnableEurekaClient), internally it is using Netfix Ribbon to make
+# the actual call. The ribbon call is wrapped within Hystrix so that we can handle any errors.
+# Hystrix has low delay tolerance threshold of 1 second and hence disable it to get around the problem of
+# requests timing out.
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+
+# The timeouts used by the internal ribbon client used by Zuul, note that the values are in milliseconds
+ribbon:
+  ReadTimeout: 60000
+  ConnectTimeout: 60000
+
+# Define the Eureka server that handles service registration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+---
+# Auth-server instance when used on Docker
+spring:
+  profiles: docker
+  zipkin:
+    baseUrl: http://zipkinserver:9411/
+
+eureka:
+# Register our microservices to Eureka using hostnames in a Docker environment will not work, they will all get
+# one and the same hostname. Instead we configure them to use its IP address during registration with Eureka.
+  instance:
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://eurekaregistry:8761/eureka/
+
+# The OAuth2 server definition that would be used to send the authorization requests to
+authserver:
+    hostname: authserver
+    port: 8899
+    contextPath: userauth
+
+# Define the port where the API gateway server would be running. This could always be port 8080
+# since each docker container has it's own IP
+server:
+  port: 8765
